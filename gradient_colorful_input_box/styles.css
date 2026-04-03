@@ -1,0 +1,99 @@
+/* 
+  GradientInput - Premium Soft Bleed Styles (Dual Pseudo-Element)
+  
+  Stacking order (bottom to top):
+  1. ::before  — Rainbow gradient glow layer (z-index: -2)
+  2. ::after   — White radial mask layer (z-index: -1)
+  3. Content   — Textarea & buttons (z-index: auto, naturally on top)
+  
+  The white mask covers the center, only allowing the rainbow to 
+  'bleed' through at the semi-transparent edges.
+*/
+
+.premium-focus-glow {
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  /* Remove background from the element itself — the ::after handles it */
+  background: transparent !important;
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════
+   Layer 1: Rainbow Gradient Glow (Behind Everything)
+   ═══════════════════════════════════════════ */
+.premium-focus-glow::before {
+  content: '';
+  position: absolute;
+  inset: -4px; /* Extends beyond the container for edge glow */
+  background: linear-gradient(90deg, #a7f3d0, #fdba74, #bfdbfe, #a7f3d0);
+  background-size: 200% 100%;
+  border-radius: inherit;
+  z-index: -2; 
+  opacity: 0;
+  transition: opacity 0.8s ease, filter 0.8s ease;
+  filter: blur(12px);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   Layer 2: White Radial Mask (Covers center, fades at edges)
+   ═══════════════════════════════════════════ */
+.premium-focus-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Pure white center → translucent edges for rainbow bleed-through */
+  background: radial-gradient(circle at center, #ffffff 55%, rgba(255, 255, 255, 0.88) 80%, rgba(255, 255, 255, 0.75) 100%);
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+  /* Soft inner glow to smooth the transition */
+  box-shadow: inset 0 0 40px 10px #ffffff;
+  /* Glassmorphism scatter on the translucent edges */
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* ═══════════════════════════════════════════
+   Focus State: Activate the rainbow glow
+   ═══════════════════════════════════════════ */
+.premium-focus-glow:focus-within {
+  transform: translateY(-4px); 
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.12) !important;
+}
+
+.premium-focus-glow:focus-within::before {
+  opacity: 0.95;
+  filter: blur(18px); /* Expand the glow softly on focus */
+  animation: shimmer-glow-outer 3s linear infinite;
+}
+
+@keyframes shimmer-glow-outer {
+  from { background-position: 0% 0%; }
+  to { background-position: 200% 0%; }
+}
+
+/* ═══════════════════════════════════════════
+   Spacious Input Field Styling
+   ═══════════════════════════════════════════ */
+.gradient-input-field {
+  position: relative;
+  z-index: 1; /* Ensure text is above the pseudo-element layers */
+  flex: 1;
+  background: transparent !important; /* Transparent so ::after shows through */
+  border: none;
+  outline: none;
+  color: #111827;
+  font-size: 1.125rem; /* text-lg */
+  padding: 1.5rem 1rem 1.5rem 2rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.gradient-input-field::placeholder {
+  color: rgba(17, 24, 39, 0.2);
+  font-weight: 500;
+}

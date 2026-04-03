@@ -1,0 +1,17 @@
+{
+  "Process": {
+    "Feed Flow": "1,240 m³/h",
+    "Operating Pressure": "3.2 MPa",
+    "Design Temperature": "185 °C",
+    "Stream Density": "842 kg/m³",
+    "Viscosity": "0.45 cP",
+    "Vapor Fraction": "0.12"
+  },
+  "Equipment": {
+    "Pump P-101 Status": "Running",
+    "Vessel V-202 Level": "65.4%",
+    "Heater Duty": "4.2 MW",
+    "Valve Position": "85% Open",
+    "Rotary Speed": "2,950 rpm"
+  }
+}
