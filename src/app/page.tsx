@@ -11,10 +11,12 @@ export default function Home() {
   const { t } = useLanguage();
   const [showUnderConstruction, setShowUnderConstruction] = useState(false);
   const [underConstructionTitle, setUnderConstructionTitle] = useState("");
+  const [currentBetaType, setCurrentBetaType] = useState("");
 
   const handleCreateProject = (type: "simulation" | "piping" | "pid" | "hazop", title: string) => {
     if (type === "pid" || type === "hazop") {
       setUnderConstructionTitle(type === "pid" ? "P&ID Generation" : "HAZOP Analysis");
+      setCurrentBetaType(type);
       setShowUnderConstruction(true);
       return;
     }
@@ -40,11 +42,33 @@ export default function Home() {
     router.push(`/chat`);
   };
 
+  const handleApplyBeta = async () => {
+    // 采集内测申请数据
+    const applicationData = {
+      email: "admin@kukutech.com", // 现阶段使用 Mock 用户邮箱
+      name: t.nav.adminName || "Kuku Admin",   // 用户名称
+      applyTime: new Date().toISOString(),
+      betaType: currentBetaType
+    };
+
+    console.log("Submitting Beta Application:", applicationData);
+
+    try {
+      // 模拟对接后端接口
+      // await fetch('/api/beta/apply', { method: 'POST', body: JSON.stringify(applicationData) });
+      
+      alert(t.landing.comingSoon.successAlert);
+      setShowUnderConstruction(false);
+    } catch (error) {
+      console.error("Failed to apply for beta:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen relative flex flex-col justify-between pt-24 px-[60px] max-w-screen-2xl mx-auto z-10 animate-in fade-in duration-700">
       <AppTopNav />
       
-      {/* Main Content Area: Hero + Cards */}
+      {/* ... (Hero and Cards content remains the same) */}
       <main className="flex-1 flex flex-col items-center justify-center -mt-10">
         
         {/* Hero Section */}
@@ -159,10 +183,7 @@ export default function Home() {
  
               <div className="flex flex-col w-full gap-4 mt-4">
                 <button 
-                  onClick={() => {
-                    alert(t.landing.comingSoon.successAlert);
-                    setShowUnderConstruction(false);
-                  }}
+                  onClick={handleApplyBeta}
                   className="w-full bg-[#111827] text-white py-5 rounded-full font-black text-[16px] shadow-2xl shadow-black/30 hover:scale-[1.03] active:scale-95 transition-all"
                 >
                   {t.landing.comingSoon.notifyBtn}

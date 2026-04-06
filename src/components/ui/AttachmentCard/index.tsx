@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { File, FileText, Image, Trash2, Download, Eye, Plus, MoreHorizontal, Pencil } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { truncateMiddle } from '@/lib/fileUtils';
 
 export type AttachmentCardProps = {
   id: string;
@@ -11,6 +12,7 @@ export type AttachmentCardProps = {
   onDownload?: (id: string) => void;
   onAdd?: (id: string) => void;
   onRename?: (id: string) => void;
+  active?: boolean;
 };
 
 function getFileIcon(type: string, name: string) {
@@ -61,6 +63,7 @@ export default function AttachmentCard({
   onDownload,
   onAdd,
   onRename,
+  active = false,
 }: AttachmentCardProps) {
   const { t } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
@@ -81,15 +84,24 @@ export default function AttachmentCard({
     };
   }, [showMenu]);
 
+  const displayName = truncateMiddle(name, 48);
+
   return (
-    <div className={`group relative flex items-center bg-white/60 border border-white/60 p-3 rounded-[22px] shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 active:scale-[0.98] ${showMenu ? 'z-[50]' : 'z-auto'}`}>
+    <div className={`group relative flex items-start p-3 rounded-[22px] shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 active:scale-[0.98] ${
+      active 
+        ? 'bg-white border border-primary/30 shadow-primary/5' 
+        : 'bg-white border border-black/5'
+    } ${showMenu ? 'z-[50]' : 'z-auto'}`}>
       {/* File Icon */}
       {getFileIcon(type, name)}
 
       {/* File Info */}
       <div className="flex flex-col overflow-hidden flex-1 px-3">
-        <span className="text-xs font-bold text-[#111827] truncate leading-tight transition-colors group-hover:text-primary" title={name}>
-          {name}
+        <span 
+          className="text-[11px] font-bold text-[#111827] line-clamp-2 leading-tight transition-colors group-hover:text-primary break-all" 
+          title={name}
+        >
+          {displayName}
         </span>
         <span className="text-[9px] text-[#111827]/30 font-black uppercase tracking-wider mt-0.5">
           {formatSize(size)}
@@ -97,7 +109,7 @@ export default function AttachmentCard({
       </div>
 
       {/* Action Buttons Area */}
-      <div className={`flex items-center gap-1.5 transition-opacity ${showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+      <div className={`flex items-center gap-1.5 transition-opacity mt-1 ${showMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
         {/* Plus Button: Add to Context */}
         {onAdd && (
           <button
@@ -105,10 +117,14 @@ export default function AttachmentCard({
               e.stopPropagation();
               onAdd?.(id);
             }}
-            className="w-7 h-7 flex items-center justify-center bg-primary/10 text-primary rounded-full shadow-sm hover:bg-primary hover:text-white transition-all active:scale-90"
-            title={t.common.add_to_context || "Add to Context"}
+            className={`w-7 h-7 flex items-center justify-center rounded-full shadow-sm transition-all active:scale-90 ${
+              active 
+                ? 'bg-primary text-white shadow-primary/20' 
+                : 'bg-primary/10 text-primary hover:bg-primary hover:text-white'
+            }`}
+            title={active ? (t.common.remove_from_context || "Remove from Context") : (t.common.add_to_context || "Add to Context")}
           >
-            <Plus size={14} strokeWidth={3} />
+            {active ? <Download size={14} className="rotate-180" strokeWidth={3} /> : <Plus size={14} strokeWidth={3} />}
           </button>
         )}
 

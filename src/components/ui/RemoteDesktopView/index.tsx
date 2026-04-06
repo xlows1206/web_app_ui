@@ -14,6 +14,8 @@ interface RemoteDesktopViewProps {
   streamUrl?: string;
   /** 自定义类名 */
   className?: string;
+  /** 是否正在调整尺寸 */
+  isResizing?: boolean;
 }
 
 /**
@@ -24,7 +26,8 @@ export default function RemoteDesktopView({
   isLive,
   status,
   streamUrl,
-  className = ""
+  className = "",
+  isResizing = false
 }: RemoteDesktopViewProps) {
   return (
     <div className={`relative w-full h-full flex flex-col ${status === "agent-operating" ? "agent-operating-glow" : ""} ${className}`}>
@@ -36,7 +39,7 @@ export default function RemoteDesktopView({
             <img 
               src="/remote_mock.png" 
               alt="Remote Desktop" 
-              className={`w-full h-full object-cover select-none transition-all duration-700 ${status === 'agent-operating' ? 'brightness-110 saturate-[1.1]' : 'brightness-100'}`}
+              className={`w-full h-full object-cover select-none ${isResizing ? 'transition-none' : 'transition-all duration-700'} ${status === 'agent-operating' ? 'brightness-110 saturate-[1.1]' : 'brightness-100'}`}
             />
             
             {/* 顶层状态叠加层 (预留接口可扩展) */}

@@ -40,6 +40,7 @@ type Translations = {
     view: string;
     more: string;
     add_to_context: string;
+    remove_from_context: string;
     noMatch: string;
     all: string;
     justNow: string;
@@ -159,6 +160,7 @@ type Translations = {
     projectParams: string;
     noAttachments: string;
     uploadNew: string;
+    uploadAttachment: string;
     assets: string;
     attachmentsTitle: string;
     simulationCases: { id: string; title: string; desc: string; img: string; prompt: string }[];
@@ -226,6 +228,7 @@ type Translations = {
       aiRecognitionMsg: string;
       assistant: string;
       liveView: string;
+      taskList: string;
       engineActive: string;
       engineOffline: string;
       engineActiveDesc: string;
@@ -251,6 +254,12 @@ type Translations = {
       generating: string;
     };
     quickPrompts: { id: string; title: string; prompt: string }[];
+    status: {
+      working: string;
+      thinking: string;
+      generating: string;
+      thoughtProcess: string;
+    };
   };
   fileUpload: {
     dropzoneActive: string;
@@ -367,7 +376,7 @@ const dictionaries: Record<Locale, Translations> = {
       historySessions: "History Sessions",
       noSessions: "No sessions yet",
       sendFirstObjective: "Send your first objective",
-      recent: "Recent",
+      recent: "Recent Projects",
       expand: "Expand Sidebar",
       collapse: "Collapse Sidebar"
     },
@@ -384,6 +393,7 @@ const dictionaries: Record<Locale, Translations> = {
       view: "View",
       more: "More",
       add_to_context: "Add to Context",
+      remove_from_context: "Remove from Context",
       noMatch: "No Match Found",
       all: "All",
       justNow: "Just now",
@@ -508,6 +518,7 @@ const dictionaries: Record<Locale, Translations> = {
       projectParams: "Project Parameters",
       noAttachments: "No Attachments",
       uploadNew: "Upload New",
+      uploadAttachment: "Upload Attachment",
       assets: "ASSETS",
       attachmentsTitle: "Project Attachments",
       simulationCases: [
@@ -520,7 +531,7 @@ const dictionaries: Record<Locale, Translations> = {
         { id: "c5", title: "Clash Detection", desc: "Run a hard clash test against structural steel beams.", img: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400", prompt: "Run a clash detection study for the new pipe rack layout against existing structural columns." },
         { id: "c6", title: "Isometric Gen", desc: "Generate isometric drawings with BOM for fabricated spools.", img: "https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?auto=format&fit=crop&q=80&w=400", prompt: "Generate isometric extraction for line numbers L-1001 to L-1005 including standard BOM." }
       ],
-      parameters: "Parameters",
+      parameters: "Params",
       parameterCategories: {
         Process: "Process",
         Equipment: "Equipment"
@@ -587,6 +598,7 @@ const dictionaries: Record<Locale, Translations> = {
       aiRecognitionMsg: "AI Recognition",
       assistant: "Assistant",
       liveView: "Live View",
+      taskList: "PROGRESS",
       engineActive: "Engine Active",
       engineOffline: "Engine Offline",
       engineActiveDesc: "Data link established. Models and renders will appear here.",
@@ -616,7 +628,13 @@ const dictionaries: Record<Locale, Translations> = {
         { id: "simulation", title: "Build a simulation plan", prompt: "Based on this document, give me an actionable simulation setup plan and parameter checklist." },
         { id: "risks", title: "Spot the risk points", prompt: "Identify likely operational risks, control points, and validation checkpoints in this process." },
         { id: "materials", title: "List missing inputs", prompt: "What extra documents, operating conditions, and parameters do I still need before starting the simulation?" }
-      ]
+      ],
+      status: {
+        working: "Working...",
+        thinking: "Thinking...",
+        generating: "Generating...",
+        thoughtProcess: "Thought Process"
+      }
     },
     fileUpload: {
       dropzoneActive: "Release to upload files",
@@ -725,7 +743,7 @@ const dictionaries: Record<Locale, Translations> = {
       historySessions: "历史会话记录",
       noSessions: "暂无会话",
       sendFirstObjective: "发送您的第一个目标",
-      recent: "最近会话",
+      recent: "最近项目",
       expand: "展开边栏",
       collapse: "收起边栏"
     },
@@ -742,6 +760,7 @@ const dictionaries: Record<Locale, Translations> = {
       view: "查看",
       more: "更多",
       add_to_context: "添加至上下文",
+      remove_from_context: "从上下文中移除",
       noMatch: "无匹配内容",
       all: "全部",
       justNow: "刚刚",
@@ -866,6 +885,7 @@ const dictionaries: Record<Locale, Translations> = {
       projectParams: "项目参数",
       noAttachments: "暂无附件",
       uploadNew: "上传新文件",
+      uploadAttachment: "上传附件",
       assets: "附件",
       attachmentsTitle: "项目附件列表",
       simulationCases: [
@@ -945,6 +965,7 @@ const dictionaries: Record<Locale, Translations> = {
       aiRecognitionMsg: "AI 消息识别",
       assistant: "智能助手",
       liveView: "实时视图",
+      taskList: "任务进度",
       engineActive: "仿真引擎在线",
       engineOffline: "仿真引擎离线",
       engineActiveDesc: "数据链路已建立。模型与渲染结果将在此处显示。",
@@ -974,7 +995,13 @@ const dictionaries: Record<Locale, Translations> = {
         { id: "simulation", title: "生成仿真方案", prompt: "基于当前文档，请给我一个可执行的仿真建模方案和参数准备清单。" },
         { id: "risks", title: "识别风险点", prompt: "请指出这个流程里可能存在的操作风险、控制点和需要重点验证的环节。" },
         { id: "materials", title: "列出准备材料", prompt: "为了开始仿真，我还需要补充哪些文档、参数和工况数据？" }
-      ]
+      ],
+      status: {
+        working: "正在处理...",
+        thinking: "正在思考...",
+        generating: "正在生成...",
+        thoughtProcess: "思考过程"
+      }
     },
     fileUpload: {
       dropzoneActive: "松开以上传文件",

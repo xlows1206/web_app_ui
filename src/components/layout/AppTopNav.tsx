@@ -27,7 +27,7 @@ export default function AppTopNav() {
         
         <div className="flex items-center gap-4">
           {/* Invite Rewards Button */}
-          <InviteReward />
+{/* <InviteReward /> */}
           
           {/* Notifications Center Panel */}
           <NotificationCenter />

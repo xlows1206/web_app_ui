@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
-import { Paperclip, ArrowRight, Square, ChevronDown, ChevronUp, Mic } from "lucide-react";
+import React, { useRef, useEffect, useState } from "react";
+import { ArrowRight, Square, ChevronDown, ChevronUp, Mic, Paperclip, Check, Plus, Search, X, Terminal } from "lucide-react";
 import ChatBubble from "@/components/ui/ChatBubble";
 import QuickPromptTile from "@/components/ui/QuickPromptTile";
 import { AttachmentList } from "@/components/AttachmentList";
+import { FileCard } from "@/components/FileCard";
 import type { AttachedFile } from "@/components/FileCard";
-import type { AgentTaskStatus } from "@/components/AgentTaskProgress";
+import type { AgentTaskStatus } from "@/components/ui/AgentTaskCard";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { truncateMiddle } from "@/lib/fileUtils";
 
 export interface ChatMessage {
   id: string;
@@ -17,6 +19,8 @@ export interface ChatMessage {
   agentTask?: AgentTaskStatus;
   isRoutingCard?: boolean;
   isMemoryCard?: boolean;
+  reasoning_content?: string;
+  status?: "working" | "thinking" | "generating" | "completed";
 }
 
 export interface QuickPrompt {
@@ -34,13 +38,14 @@ interface AIChatBoxProps {
   isGenerating: boolean;
   attachments?: AttachedFile[];
   onRemoveAttachment?: (id: string) => void;
-  onAttachClick?: () => void;
   quickPrompts?: QuickPrompt[];
   isQuickStartCollapsed?: boolean;
   onToggleQuickStart?: () => void;
   placeholder?: string;
   className?: string;
   maxHeight?: string;
+  projectFiles?: any[];
+  onAddAttachment?: (id: string) => void;
 }
 
 export default function AIChatBox({
@@ -52,43 +57,78 @@ export default function AIChatBox({
   isGenerating,
   attachments = [],
   onRemoveAttachment,
-  onAttachClick,
   quickPrompts = [],
   isQuickStartCollapsed = false,
   onToggleQuickStart,
   placeholder,
   className = "",
-  maxHeight = "500px"
+  projectFiles = [],
+  onAddAttachment
 }: AIChatBoxProps) {
   const { t } = useLanguage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    if (editorRef.current && input === "") {
+        editorRef.current.innerText = "";
     }
   }, [input]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const [showAttachmentPicker, setShowAttachmentPicker] = useState(false);
+  const [showCommandPicker, setShowCommandPicker] = useState(false);
+  const [commandSearch, setCommandSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const commandPickerRef = useRef<HTMLDivElement>(null);
+
+  const CLI_COMMANDS = [
+    { id: 'analyze', name: '/analyze', description: 'Analyze current code/context' },
+    { id: 'fix', name: '/fix', description: 'Fix errors or bugs' },
+    { id: 'optimize', name: '/optimize', description: 'Optimize performance/logic' },
+    { id: 'refactor', name: '/refactor', description: 'Refactor for better readability' },
+    { id: 'doc', name: '/document', description: 'Generate documentation' },
+    { id: 'explain', name: '/explain', description: 'Explain step by step' }
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+        setShowAttachmentPicker(false);
+      }
+      if (commandPickerRef.current && !commandPickerRef.current.contains(event.target as Node)) {
+        setShowCommandPicker(false);
+      }
+    };
+    if (showAttachmentPicker || showCommandPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showAttachmentPicker, showCommandPicker]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       onSend();
+    } else if (e.key === "Backspace" && e.currentTarget.selectionStart === 0 && attachments.length > 0 && onRemoveAttachment) {
+      // Remove last attachment when backspacing at the beginning of the text
+      onRemoveAttachment(attachments[attachments.length - 1].id);
     }
   };
+
+  const filteredFiles = projectFiles.filter(f => 
+    f.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className={`flex flex-col h-full w-full overflow-hidden ${className}`}>
       {/* Messages Area */}
       <div 
         className="flex-1 overflow-y-auto custom-scrollbar px-4 py-5 flex flex-col gap-4"
-        style={{ maxHeight }}
       >
         {messages.map((msg) => (
           <ChatBubble 
@@ -99,7 +139,9 @@ export default function AIChatBox({
             agentTask={msg.agentTask}
             isRoutingCard={msg.isRoutingCard}
             isMemoryCard={msg.isMemoryCard}
-            isGenerating={msg.role === "assistant" && msg.agentTask && !msg.agentTask.isFinished}
+            reasoning_content={msg.reasoning_content}
+            status={msg.status}
+            isGenerating={msg.role === "assistant" && (msg.status === "generating" || (msg.agentTask && !msg.agentTask.isFinished))}
           />
         ))}
         <div ref={messagesEndRef} />
@@ -146,47 +188,193 @@ export default function AIChatBox({
         </div>
       )}
 
-      {/* Attachments Area */}
-      {attachments.length > 0 && (
-        <div className="px-4 pt-1 pb-3">
-          <AttachmentList 
-            files={attachments} 
-            onRemove={onRemoveAttachment || (() => {})} 
-          />
-        </div>
-      )}
-
-      {/* Input Area */}
-      <div className="px-6 py-8 bg-transparent shrink-0">
-        <div className="relative flex items-center bg-white/40 backdrop-blur-2xl rounded-[32px] border border-white/60 shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-2 transition-all focus-within:bg-white/60 focus-within:shadow-[0_25px_60px_rgba(0,0,0,0.08)] focus-within:border-white group">
+      {/* Input Area - True Inline Flow v3 (Merged Flow) */}
+      <div className="px-4 py-4 bg-transparent shrink-0">
+        <div className="relative rounded-[32px] border border-white/60 premium-focus-glow transition-all group overflow-visible min-h-[100px] bg-white/40 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
           
-          <textarea
-            ref={textareaRef}
-            className="flex-1 bg-transparent border-none outline-none text-[15px] text-[#111827] placeholder:text-[#111827]/25 font-bold px-4 py-3.5 resize-none overflow-y-auto custom-scrollbar min-h-[56px] max-h-[200px]"
-            placeholder={placeholder || t.document.aiPlaceholder}
-            rows={1}
-            value={input}
-            onChange={(e) => onInputChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
+          {/* The Single Scrollable Flow & Editable Container */}
+          <div 
+            ref={editorRef}
+            key={`session-input-${attachments.length}`} // Keyed to prevent React DOM desync crashes on node change
+            className="gradient-input-container w-full custom-scrollbar"
+            contentEditable={!isGenerating}
+            onInput={(e) => {
+              // Extract only typed text by cloning and stripping pills
+              const tempDiv = e.currentTarget.cloneNode(true) as HTMLDivElement;
+              const pills = tempDiv.querySelectorAll('.pill-inline-wrapper');
+              pills.forEach(p => p.remove());
+              onInputChange(tempDiv.innerText);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                onSend();
+              } else if (e.key === "Backspace" && attachments.length > 0) {
+                const selection = window.getSelection();
+                if (selection && selection.anchorOffset === 0 && (e.currentTarget.innerText.trim() === "")) {
+                   onRemoveAttachment?.(attachments[attachments.length - 1].id);
+                }
+              }
+            }}
+            onBlur={(e) => {
+                const tempDiv = e.currentTarget.cloneNode(true) as HTMLDivElement;
+                const pills = tempDiv.querySelectorAll('.pill-inline-wrapper');
+                pills.forEach(p => p.remove());
+                onInputChange(tempDiv.innerText);
+            }}
+            data-placeholder={placeholder || t.document.aiPlaceholder}
+            spellCheck={false}
+            suppressContentEditableWarning={true}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                const range = document.createRange();
+                const sel = window.getSelection();
+                range.selectNodeContents(e.currentTarget);
+                range.collapse(false);
+                sel?.removeAllRanges();
+                sel?.addRange(range);
+              }
+            }}
+          >{attachments.map((file) => (
+                <span key={file.id} className="pill-inline-wrapper" contentEditable={false}>
+                  <FileCard 
+                    file={file} 
+                    showRemove 
+                    onRemove={onRemoveAttachment} 
+                  />
+                </span>
+              ))}
+          </div>
 
-          <div className="flex items-center gap-1 pr-2">
-            <button
-              onClick={() => onAttachClick ? onAttachClick() : fileInputRef.current?.click()}
-              className="p-2.5 text-[#111827]/30 hover:text-[#111827] hover:bg-black/5 rounded-full transition-all active:scale-90"
-              title={t.projects.uploadNew}
-            >
-              <Paperclip size={18} strokeWidth={2.5} />
-            </button>
-            <input ref={fileInputRef} type="file" className="hidden" />
+          <div className="absolute bottom-2 right-4 flex items-center gap-3 z-[100]">
+            {/* 1. CLI Shortcut Commands */}
+            <div className="relative">
+              <button
+                onClick={() => setShowCommandPicker(!showCommandPicker)}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 shadow-sm border border-black/5 ${
+                  showCommandPicker 
+                    ? "bg-[#111827] text-white" 
+                    : "bg-white text-[#111827]/30 hover:bg-white hover:text-[#111827]/60"
+                }`}
+                title="Shortcut Commands (/)"
+              >
+                <Terminal size={18} strokeWidth={2.5} />
+              </button>
+
+              {showCommandPicker && (
+                <div 
+                  ref={commandPickerRef}
+                  className="absolute bottom-full right-0 mb-4 w-64 bg-white/95 backdrop-blur-3xl rounded-[24px] shadow-2xl border border-white/60 p-3 z-[110] animate-in fade-in slide-in-from-bottom-2 duration-300"
+                >
+                  <div className="flex items-center gap-2 bg-black/5 rounded-xl px-3 py-2 mb-3">
+                    <Search size={14} className="text-[#111827]/30" />
+                    <input 
+                      className="bg-transparent border-none outline-none text-xs font-bold text-[#111827] w-full placeholder:text-[#111827]/20"
+                      placeholder="Search commands..."
+                      value={commandSearch}
+                      onChange={(e) => setCommandSearch(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <div className="max-h-60 overflow-y-auto custom-scrollbar flex flex-col gap-1 pr-1">
+                    {CLI_COMMANDS.filter(c => c.name.includes(commandSearch)).map(cmd => (
+                      <button
+                        key={cmd.id}
+                        onClick={() => {
+                          const newText = cmd.name + " ";
+                          onInputChange(newText);
+                          if (editorRef.current) {
+                            editorRef.current.innerText = newText;
+                            editorRef.current.focus();
+                            // Place cursor at end
+                            const range = document.createRange();
+                            const sel = window.getSelection();
+                            range.selectNodeContents(editorRef.current);
+                            range.collapse(false);
+                            sel?.removeAllRanges();
+                            sel?.addRange(range);
+                          }
+                          setShowCommandPicker(false);
+                        }}
+                        className="flex flex-col p-2.5 rounded-xl transition-all hover:bg-primary/5 text-left group"
+                      >
+                        <span className="text-[13px] font-black text-[#111827] group-hover:text-primary">{cmd.name}</span>
+                        <span className="text-[10px] font-bold text-[#111827]/30 italic">{cmd.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 2. Attachment Button & Picker */}
+            {projectFiles.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowAttachmentPicker(!showAttachmentPicker)}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 shadow-sm border border-black/5 ${
+                    showAttachmentPicker 
+                      ? "bg-[#111827] text-white" 
+                      : "bg-white text-[#111827]/30 hover:bg-white hover:text-[#111827]/60"
+                  }`}
+                  title={t.projects.assets || "Select Assets"}
+                >
+                  <Paperclip size={18} strokeWidth={2.5} />
+                </button>
+
+                {showAttachmentPicker && (
+                  <div 
+                    ref={pickerRef}
+                    className="absolute bottom-full right-[-20px] mb-4 w-72 bg-white/95 backdrop-blur-3xl rounded-[24px] shadow-2xl border border-white/60 p-3 z-[110] animate-in fade-in slide-in-from-bottom-2 duration-300"
+                  >
+                    <div className="flex items-center gap-2 bg-black/5 rounded-xl px-3 py-2 mb-3">
+                      <Search size={14} className="text-[#111827]/30" />
+                      <input 
+                        className="bg-transparent border-none outline-none text-xs font-bold text-[#111827] w-full placeholder:text-[#111827]/20"
+                        placeholder="Search project files..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                    <div className="max-h-60 overflow-y-auto custom-scrollbar flex flex-col gap-1 pr-1">
+                      {filteredFiles.map(file => {
+                        const isActive = attachments.some(a => a.id === file.id);
+                        return (
+                          <button
+                            key={file.id}
+                            onClick={() => onAddAttachment?.(file.id)}
+                            className={`flex items-center justify-between p-2 rounded-xl border transition-all text-left ${
+                              isActive 
+                                ? "bg-primary/5 border-primary/20" 
+                                : "bg-transparent border-transparent hover:bg-black/5"
+                            }`}
+                          >
+                            <div className="flex flex-col min-w-0">
+                              <span className={`text-[11px] font-black truncate ${isActive ? "text-primary" : "text-[#111827]"}`}>{file.name}</span>
+                              <span className="text-[9px] font-bold text-[#111827]/30 uppercase tracking-wider">{file.size}</span>
+                            </div>
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-all ${
+                              isActive ? "bg-primary text-white" : "bg-black/5 text-transparent"
+                            }`}>
+                              <Check size={10} strokeWidth={4} />
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <button
               onClick={isGenerating ? onStop : onSend}
-              disabled={!isGenerating && !input.trim()}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 shadow-[0_8px_25px_rgba(17,24,39,0.2)] active:scale-90 ${
+              disabled={!isGenerating && !input.trim() && attachments.length === 0}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0 shadow-[0_10px_30px_rgba(17,24,39,0.3)] active:scale-90 ${
                 isGenerating 
                   ? "bg-red-500 text-white shadow-red-200" 
-                  : "bg-[#111827] text-white disabled:opacity-10 disabled:pointer-events-none hover:scale-105 hover:-translate-y-0.5"
+                  : "bg-[#111827] text-white disabled:opacity-30 hover:scale-105 hover:-translate-y-0.5"
               }`}
             >
               {isGenerating ? (

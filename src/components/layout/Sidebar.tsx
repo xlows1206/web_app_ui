@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { Plus, Home, ArrowRight, FolderKanban, ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen, Search, ChevronDown, MessageSquare, Box, Activity } from "lucide-react";
+import { Plus, Home, ArrowRight, FolderKanban, ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen, Search, ChevronDown, MessageSquare, Box, Activity, FileText, ShieldAlert } from "lucide-react";
 
 
 
@@ -31,6 +31,7 @@ export default function Sidebar() {
             id: "p1",
             name: "Alpha Simulation",
             type: "simulation",
+            updatedAtValue: "1天",
             sessions: [
               { id: "s1", name: "Initial Setup" },
               { id: "s2", name: "Parameter Tuning" },
@@ -40,6 +41,7 @@ export default function Sidebar() {
             id: "p2",
             name: "Site Piping 3D",
             type: "piping",
+            updatedAtValue: "3小时",
             sessions: [
               { id: "s3", name: "Routing A" },
               { id: "s4", name: "Clash Check" },
@@ -62,16 +64,8 @@ export default function Sidebar() {
     };
   }, []);
 
-  const recentSessions = React.useMemo(() => {
-    const all: any[] = [];
-    projects.forEach(p => {
-      if (p.sessions) {
-        p.sessions.forEach((s: any) => {
-          all.push({ ...s, projectId: p.id, projectName: p.name });
-        });
-      }
-    });
-    return all.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 5);
+  const recentProjects = React.useMemo(() => {
+    return projects.slice(0, 5);
   }, [projects]);
 
   const toggleProject = (projectId: string) => {
@@ -141,32 +135,40 @@ export default function Sidebar() {
         {!isCollapsed && (
           <div className="px-4 flex flex-col gap-6 flex-1 overflow-hidden">
             
-            {/* Recent Sessions */}
-            {recentSessions.length > 0 && (
+            {/* Recent Projects */}
+            {recentProjects.length > 0 && (
               <div className="shrink-0 border-t border-black/5 pt-4">
                 <div className="flex items-center justify-between px-3 text-xs font-bold text-on-surface/40 uppercase tracking-wider mb-2">
                   <span>{t.sidebar.recent}</span>
                 </div>
                 <div className="space-y-1">
-                  {recentSessions.map((session, i) => (
+                  {recentProjects.map((project, i) => (
                     <button 
-                      key={`${session.id}-${i}`}
+                      key={`${project.id}-${i}`}
                       onClick={() => {
-                         localStorage.setItem("procagent_active_project_id", session.projectId);
-                         localStorage.setItem("procagent_active_session_id", session.id);
+                         localStorage.setItem("procagent_active_project_id", project.id);
+                         localStorage.removeItem("procagent_active_session_id");
                          window.dispatchEvent(new Event("procagent_context_updated"));
                          router.push('/chat');
                       }}
-                      className="group flex flex-col justify-center w-full px-3 py-2.5 rounded-xl text-[13px] transition-all hover:bg-black/5 text-on-surface/70 active:scale-95 text-left"
+                      className="group flex items-center w-full px-3 py-2.5 rounded-xl text-[13px] transition-all hover:bg-black/5 text-on-surface/70 active:scale-95 text-left gap-3"
                     >
-                      <div className="flex items-center gap-2 truncate mb-1">
-                        <MessageSquare size={14} className="shrink-0 opacity-40 group-hover:text-primary group-hover:opacity-100 transition-colors" />
-                        <span className="font-bold truncate group-hover:text-primary transition-colors">{session.name}</span>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all ${
+                        project.type === "simulation" ? "bg-blue-500/10 text-blue-600" : 
+                        project.type === "piping" ? "bg-orange-500/10 text-orange-600" :
+                        project.type === "pid" ? "bg-emerald-500/10 text-emerald-600" :
+                        "bg-rose-500/10 text-rose-600"
+                      }`}>
+                        {project.type === "simulation" && <Activity size={16} />}
+                        {project.type === "piping" && <Box size={16} />}
+                        {project.type === "pid" && <FileText size={16} />}
+                        {project.type === "hazop" && <ShieldAlert size={16} />}
                       </div>
-                      <div className="pl-[22px] flex items-center">
-                         <span className="text-[10px] bg-black/5 text-on-surface/50 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider truncate">
-                           {session.projectName}
-                         </span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold truncate group-hover:text-primary transition-colors leading-tight">{project.name}</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-on-surface/30 mt-0.5">
+                          {project.updatedAtValue ? `${project.updatedAtValue}${t.projects.ago}` : t.common.justNow}
+                        </span>
                       </div>
                     </button>
                   ))}

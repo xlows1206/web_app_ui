@@ -6,11 +6,10 @@
   --color-surface: #fdfbf7;
   --color-on-surface: #111827;
   --color-outline: rgba(255, 255, 255, 0.6);
-  --color-glass-bg: rgba(255, 255, 255, 0.45);
-  --color-glass-border: rgba(255, 255, 255, 0.65);
+  --color-glass-bg: rgba(255, 255, 255, 0.4);
+  --color-glass-border: rgba(255, 255, 255, 0.6);
   
-  --font-sans: "Manrope", var(--font-manrope), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-chinese: var(--font-noto-sans-sc), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+  --font-sans: var(--font-manrope), system-ui, -apple-system, "BlinkMacSystemFont", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", var(--font-noto-sans-sc), "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
   
   --radius-*: initial;
   --radius: 0.5rem;
@@ -21,32 +20,37 @@
   --radius-full: 9999px;
 }
 
-/* Global Typography Optimization */
-:root {
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Base Body Styles */
 body {
-  font-family: var(--font-sans), var(--font-chinese);
-  /* Apply Mesh Gradient directly to body to skip z-index issues */
-  background: 
-    fixed 
-    radial-gradient(at 0% 0%, #A7F3D0 0px, transparent 60%),
-    radial-gradient(at 100% 0%, #FDBA74 0px, transparent 60%),
-    radial-gradient(at 100% 100%, #BFDBFE 0px, transparent 60%),
-    radial-gradient(at 0% 100%, #FDFBF7 0px, transparent 60%),
-    #FDFBF7;
-  background-size: 200% 200%;
-  animation: mesh-breathe 25s ease infinite alternate;
-  color: #111827;
+  font-family: var(--font-sans);
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+}
+
+/* Mesh Gradient Background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background-image: 
+    radial-gradient(at 0% 0%, #a7f3d0 0px, transparent 50%),
+    radial-gradient(at 100% 0%, #fdba74 0px, transparent 50%),
+    radial-gradient(at 100% 100%, #bfdbfe 0px, transparent 50%),
+    radial-gradient(at 0% 100%, #fdfbf7 0px, transparent 50%);
+  background-size: 200% 200%;
+  animation: mesh-breathe 15s ease infinite alternate;
 }
 
 @keyframes mesh-breathe {
@@ -56,11 +60,21 @@ body {
 }
 
 .glass-panel {
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.48);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  /* Use only inset shadow and subtle border to define shape, removing the bleed */
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.35);
+  transition: all 0.3s ease;
+}
+
+.glass-panel:hover {
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.45);
 }
 
 /* premium-focus-glow styles are defined in GradientInput/styles.css */
@@ -122,6 +136,8 @@ body {
   scrollbar-width: none;
 }
 
+/* --- Functional Helpers & Animations (Preserved) --- */
+
 @keyframes progress-shrink {
   from { width: 100%; }
   to { width: 0%; }
@@ -129,15 +145,6 @@ body {
 
 .animate-progress-shrink {
   animation: progress-shrink 5s linear forwards;
-}
-
-@keyframes breathing {
-  0%, 100% { opacity: 0.3; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.2); }
-}
-
-.animate-breathing {
-  animation: breathing 2s ease-in-out infinite;
 }
 
 @keyframes breathing-glow {
@@ -177,4 +184,66 @@ body {
 @keyframes agent-breathe {
   from { opacity: 0.4; transform: scale(0.99); }
   to { opacity: 1.0; transform: scale(1.01); }
+}
+
+/* --- Shimmer & Flow Animations --- */
+@keyframes text-shimmer {
+  0% { background-position: 200% 0%; }
+  100% { background-position: -200% 0%; }
+}
+
+.animate-text-shimmer {
+  background: linear-gradient(
+    90deg, 
+    rgba(17, 24, 39, 0.4) 0%, 
+    rgba(17, 24, 39, 0.8) 50%, 
+    rgba(17, 24, 39, 0.4) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 2.5s linear infinite;
+}
+
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer-sweep {
+  animation: shimmer-sweep 2s ease-in-out infinite;
+}
+
+/* Resizing Helper - Force disable animations during drag */
+.resizing-col, 
+.resizing-col * {
+  cursor: col-resize !important;
+  user-select: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Thinking Text Shimmer - Left to Right Wave */
+@keyframes thinking-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-thinking-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(17, 24, 39, 0.4) 0%,
+    rgba(17, 24, 39, 0.8) 50%,
+    rgba(17, 24, 39, 0.4) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: thinking-shimmer 3s infinite linear;
 }

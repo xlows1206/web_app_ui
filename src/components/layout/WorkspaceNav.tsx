@@ -42,7 +42,7 @@ export default function WorkspaceNav({
   };
 
   return (
-    <div className="absolute top-0 left-0 right-0 h-[56px] glass-panel border-b z-50 flex items-center px-6 border-t-0 border-x-0 border-white/20">
+    <div className="relative w-full h-[56px] glass-panel border-b z-50 flex items-center px-4 border-t-0 border-x-0 border-white/20 shrink-0">
       {showBack && (
         <button
           className="mr-6 p-2 rounded-full hover:bg-black/5 active:scale-95 transition-all text-on-surface"
@@ -61,7 +61,7 @@ export default function WorkspaceNav({
 
       {/* Right: Notification + User Menu */}
       <div className="ml-6 flex items-center gap-4">
-        <InviteReward />
+{/* <InviteReward /> */}
         <NotificationCenter />
 
         <WorkspaceUserMenu

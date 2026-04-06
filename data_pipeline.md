@@ -1,45 +1,29 @@
-# Data Pipeline
+# ProcAgent 数据流演进记录
 
-## 数据输入与输出格式记录
+## 数据流向图
+`Mouse Events` -> `Drag Handler (State/Ref Update)` -> `Panel Inline Styles (Width/Flex)` -> `Reflow`
 
-| 环节 | 输入数据 | 输出数据 | 格式 | 状态 | 备注 |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Session UI 重构** | `UI_DESIGN_SPEC`, `Component CSS` | `Refactored Chat & Live View UI` | CSS/JSX | 已通畅 | 涉及头像、气泡、输入框、Live View。 |
-| **Session 渲染** | `sessionId`, `chatMessages`, `viewState` | `React Component Tree` | JSX | 通畅 | 包含智能助手和实时视图面板。 |
-| **AI Assistant 渲染** | `assistantState`, `messages` | `AI Assistant (No Pro Badge)` | JSX | 已通畅 | 成功删除了 "PRO" 标签。 |
-| **Real-time View 渲染** | `simulationState`, `connectionStatus` | `Live View (Refactored)` | JSX | 已通畅 | 更新了状态标签与全屏功能。 |
-| **项目附件列表** | `projectFiles`, `attachments` | `AttachmentCard (Horizontal)` | JSX/Object | 已通畅 | 实现"+"添加上下文及"更多"菜单操作。 |
-- **Agent 任务卡片集成**:
-    - 问题：任务进度卡片未显示。
-    - 状态：已解决。
-    - 解决：在 `chat/page.tsx` 的消息映射逻辑中补充了丢失的 `agentTask` 属性。
+## 环节数据详情
 
-## 各环节问题及解决状态
+| 环节名称 | 输入数据格式 | 输出数据格式 | 处理节点是否通畅 | 备注 |
+| :--- | :--- | :--- | :--- | :--- |
+| 获取拖拽偏移量 | MouseEvent (clientX) | Delta X (number) | 已通畅 | 已增加 320px-700px 严格阈值 |
+| 更新面板尺寸 | New Width (px/%) | CSS Style Update | 已通畅 | 禁用 Transition 消除抖动 |
+| 窗口边界限制 | Target Width | Clamped Width | 已通畅 | 增加 Min-Width 逻辑与 items-stretch |
+| Memory Update | Delta (number) | State (number) | 已通畅 | 采用极简协议，仅传递增量 |
 
-- **AI 对话窗口视觉重构**:
-    - 问题：当前风格较为基础，需对齐首屏的 Soft Glassmorphism 高级感。
-    - 状态：已解决。
-    - 解决：重构了 `ChatBubble` (头像气泡) 与 `QuickPromptTile` (提示卡片)。
+## 当前已知问题
+1. Live View 在宽度改变时发生整体缩放（可能是 transform: scale 或 aspect-ratio 导致）。
+2. 面板在特定比例下发生纵向位移（可能是 container flex 布局的 align-items 或 gap 动态变化导致）。
 
-- **输入框样式对齐**:
-    - 问题：Session 页面输入框需参考项目页面的玻璃态输入框，删除多余音频按钮。
-    - 状态：已解决。
-    - 解决：在 `AIChatBox` 中移除了 `Mic` 按钮，将 `Paperclip` 移动到右侧动作簇，并重构发送按钮为圆形 `ArrowRight` 样式，支持自动高度增长。
+## 任务状态
+- [x] 故障修复：修正式 JSON 指令剥离正则 (ChatBubble)
+- [x] 调研并确定拖拽逻辑实现方式 (SessionActiveView)
+- [x] 修复 Live View 缩放问题（禁用拖拽状态下的 Transition 动画）
+- [ ] 修复特定比例下窗口偏移及底部空隙问题
+- [x] 增加最小宽度限制 (320px)，防止窗口无限收窄
+- [ ] 验证拖拽平滑度及布局稳定性
 
-- **实时视图 (Live View) 增强**:
-    - 问题：状态标签单一且缺乏交互感。
-    - 状态：已解决。
-    - 解决：实现了多色状态转换、呼吸指示灯以及全屏模式。
-
-## 记录示例
-
-### 已完成：Session UI 视觉全面升级
-1. 重绘 AI 头像为 Mesh Gradient。
-2. 调整消息气泡对比度（User Black / Assistant Glass）。
-3. 重构记忆更新提示器 (MemoryUpdatedCard) 图标，对齐全局视觉规范。
-
-### 已完成：Agent 任务卡片集成
-- **输入**: 用户输入“执行任务”关键字。
-- **输出**: 包含流式进度条的任务卡片。
-- **逻辑**: 前端模拟 1/8 -> 8/8 的步骤更新，每步间隔 1.5s。
-- **状态**: 已通畅。
+## 拖拽性能优化记录
+- 移除了拖拽过程中的 CSS Transition，通过直接操作 DOM 样式属性避免了重绘延迟。
+- 引入了 requestAnimationFrame 节流机制，确保状态更新与浏览器刷新频率同步。

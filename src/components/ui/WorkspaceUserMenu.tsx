@@ -5,6 +5,7 @@ import { ChevronRight, Globe, LogOut, User } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import UpgradeCreditsModal from "@/components/workspace/UpgradeCreditsModal";
 import WorkspaceUserControls from "@/components/ui/WorkspaceUserControls";
+import EditNameModal from "@/components/modals/EditNameModal";
 import GradientStar from "./icons/GradientStar";
 
 type WorkspaceUserMenuProps = {
@@ -22,8 +23,12 @@ export default function WorkspaceUserMenu({
 }: WorkspaceUserMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+  const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { locale, setLocale, t } = useLanguage();
+  
+  // Local simulation of updated name
+  const [currentAdminName, setCurrentAdminName] = useState(adminName ?? t.nav.adminName);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -36,7 +41,7 @@ export default function WorkspaceUserMenu({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const resolvedAdminName = adminName ?? t.nav.adminName;
+  const resolvedAdminName = currentAdminName;
 
   return (
     <>
@@ -87,7 +92,13 @@ export default function WorkspaceUserMenu({
             </div>
 
             <div className="p-1 space-y-1">
-                <button className="w-full text-left px-4 py-3 rounded-2xl text-[13px] font-bold text-on-surface/70 hover:bg-black/5 hover:text-primary transition-all flex justify-between items-center group">
+                <button 
+                  onClick={() => {
+                    setIsEditNameOpen(true);
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-3 rounded-2xl text-[13px] font-bold text-on-surface/70 hover:bg-black/5 hover:text-primary transition-all flex justify-between items-center group"
+                >
                 <div className="flex items-center gap-3">
                     <User size={18} className="opacity-40" strokeWidth={2.5} />
                     <span>{t.menu.editProfile}</span>
@@ -128,6 +139,12 @@ export default function WorkspaceUserMenu({
       </div>
 
       <UpgradeCreditsModal isOpen={isUpgradeOpen} onClose={() => setIsUpgradeOpen(false)} />
+      <EditNameModal 
+        isOpen={isEditNameOpen} 
+        onClose={() => setIsEditNameOpen(false)} 
+        currentName={resolvedAdminName}
+        onSave={(name) => setCurrentAdminName(name)} 
+      />
     </>
   );
 }
