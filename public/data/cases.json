@@ -1,0 +1,85 @@
+{
+  "zh": {
+    "simulation": [
+      { 
+        "id": "c1", 
+        "title": "流程模拟", 
+        "desc": "围绕工艺路线，构建全流程与关键单元的高精度模型，实现装置运行的数字化表达与预测分析。通过PID图或PFD图，结合相应资料进行构建。", 
+        "media": [
+          { "url": "/assets/simulation_cover.jpg", "type": "image", "duration": 2000 },
+          { "url": "/assets/simulation_workflow.gif", "type": "gif" }
+        ],
+        "prompt": "请根据我提供的工艺资料，建立煤制氨变换工段的Aspen HYSYS稳态模拟模型，并进行合理性校核与优化分析。任务包括：1. 工艺还原 - 还原真实工业流程（是否存在分段变换、换热集成等） - 明确物流路径及能量耦合关系；2. 模型选择 - 对比Gibbs反应器与动力学反应器的适用性，并选择合理模型 - 如使用平衡模型，请说明其适用边界；3. 热力学与物性 - 选择合适物性方法（PR/SRK等） - 判断CO/H2/CO2/H2O体系是否需要二元交互参数修正 - 说明误差来源；4. 数值收敛 - 提供初始化策略（温度、压力、流量） - 分析可能的收敛困难（如强非线性、回流结构）；5. 结果验证 - 与典型工业数据对比（如CO转化率、出口温度） - 判断模型是否可信；6. 敏感性分析 - 改变关键变量（蒸汽比、温度、压力） - 分析对结果的影响趋势。",
+        "attachments": [
+          { "name": "shift pfd.pdf", "size": "1.2 MB", "type": "pdf" },
+          { "name": "原料工况.pdf", "size": "450 KB", "type": "pdf" },
+          { "name": "流程说明.pdf", "size": "890 KB", "type": "pdf" }
+        ]
+      },
+      { 
+        "id": "c2", 
+        "title": "翻模", 
+        "desc": "依托成熟装置模型，进行规模映射与参数重构，快速实现不同产能等级下的工艺复现。例如，可对 FCC、延迟焦化等装置中的稳定吸收工段进行快速调整。", 
+        "media": [
+          { "url": "/assets/reconstruction_cover.png", "type": "image", "duration": 2000 },
+          { "url": "/assets/model_reconstruction.gif", "type": "gif" }
+        ],
+        "prompt": "请基于现有稳定吸收工段的Aspen HYSYS模型，对流程进行扩能改造与参数调整。目标：- 将装置处理能力提升至原来的2倍（或指定为150万吨/年）。具体要求：【产量调整】- 根据目标产量，反推所需进料流量 - 保证物料平衡合理；【设备校核】- 校核吸收塔负荷（气速、塔径、理论级数） - 检查是否存在泛塔、液泛或分离效率下降问题 - 校核换热器负荷是否超限 - 检查压缩机/泵是否在合理操作区间；【参数调整】- 调整关键操作参数（温度、压力、回流比、溶剂比等） - 保证吸收效率满足要求；【流程稳定性】- 确保流程收敛 - 指出可能导致不收敛的单元及原因；【结果分析】- 对比改造前后：- 产品质量 - 能耗变化 - 关键设备负荷变化。" 
+      },
+
+      { 
+        "id": "c3", 
+        "title": "全局优化分析", 
+        "desc": "融合实际生产数据与机理模型，建立数据驱动的校正体系，持续缩小模型偏差，实现全流程最优运行", 
+        "media": [
+          { "url": "/assets/optimization_cover.jpg", "type": "image" }
+        ],
+        "prompt": "设定敏感性分析，将回流比从 1.0 变量至 3.0，并绘制冷凝器负荷曲线。" 
+      }
+    ],
+    "piping": [
+      { "id": "c4", "title": "管道自动路由", "desc": "自动生成连接泵出口与换热器的管路路由。", "media": [{ "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=400", "type": "image" }], "prompt": "自动生成一条从泵 P-101A 出口喷嘴到换热器 E-100 管程入口的 6 英寸碳钢管道。" },
+      { "id": "c5", "title": "硬碰撞碰撞检测", "desc": "运行针对结构钢梁的硬碰撞测试。", "media": [{ "url": "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400", "type": "image" }], "prompt": "针对新的管廊布局运行与现有建筑柱的碰撞检测研究。" },
+      { "id": "c6", "title": "单线图 ISO 生成", "desc": "为预制管段生成含材料表（BOM）的单线图。", "media": [{ "url": "https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?auto=format&fit=crop&q=80&w=400", "type": "image" }], "prompt": "为管线编号 L-1001 至 L-1005 生成单线图导出，包含标准 BOM。" }
+    ]
+  },
+  "en": {
+    "simulation": [
+      { 
+        "id": "c1", 
+        "title": "Process Simulation", 
+        "desc": "Build high-fidelity models for entire processes and key units based on process routes to achieve digital representation and predictive analysis of plant operations. Construction is based on PID or PFD diagrams and related data.", 
+        "media": [
+          { "url": "/assets/simulation_cover.jpg", "type": "image", "duration": 2000 },
+          { "url": "/assets/simulation_workflow.gif", "type": "gif" }
+        ],
+        "prompt": "Please establish an Aspen HYSYS steady-state simulation model for the coal-to-ammonia shift section based on the process data I provided, and perform rationality checking and optimization analysis. Tasks include: 1. Process Restoration - Restore the real industrial flow (check for multi-stage shift, heat integration, etc.) - Define stream paths and energy coupling; 2. Model Selection - Compare Gibbs reactors with kinetic reactors and choose a reasonable model - If using an equilibrium model, specify its applicable boundaries; 3. Thermodynamics - Choose appropriate property methods (PR/SRK, etc.) - Determine if the CO/H2/CO2/H2O system requires binary interaction parameter correction - Identify error sources; 4. Numerical Convergence - Provide initialization strategies (Temp, Press, Flow) - Analyze potential convergence difficulties (non-linearity, recycle structures); 5. Validation - Compare with typical industrial data (CO conversion, outlet temperature) - Evaluate model credibility; 6. Sensitivity Analysis - Vary key variables (steam/gas ratio, T, P) - Analyze impact trends." 
+      },
+      { 
+        "id": "c2", 
+        "title": "Model Scaling", 
+        "desc": "Leveraging mature plant models for scale mapping and parameter reconfiguration to rapidly replicate processes across different capacity levels. For example, rapid adjustments can be made to gas concentration units in FCC or Delayed Coking units.", 
+        "media": [
+          { "url": "/assets/reconstruction_cover.png", "type": "image", "duration": 2000 },
+          { "url": "/assets/model_reconstruction.gif", "type": "gif" }
+        ],
+        "prompt": "Please perform capacity expansion and parameter adjustment based on the existing Aspen HYSYS model of the gas concentration section. Objective: Increase plant capacity to 2x (or 1.5 million t/a). Specific requirements: [Capacity Adjustment] - Back-calculate required feed flow based on target capacity - Ensure material balance is reasonable; [Equipment Check] - Check absorber load (vel, dia, stages) - Check for flooding or efficiency drop - Verify heat exchanger loads - Check compressor/pump operating ranges; [Parameter Optimization] - Adjust key parameters (T, P, reflux, solvent ratio) - Maintain absorption efficiency; [Stability] - Ensure convergence - Identify units causing non-convergence; [Analysis] - Compare before/after: product quality, energy consumption, and equipment load changes." 
+      },
+
+      { 
+        "id": "c3", 
+        "title": "Global Optimization Analysis", 
+        "desc": "Integrate real production data with mechanistic models to establish a data-driven correction system, continuously narrowing model deviations to achieve optimal full-process operation.", 
+        "media": [
+          { "url": "/assets/optimization_cover.jpg", "type": "image" }
+        ],
+        "prompt": "Set up a sensitivity analysis varying the reflux ratio from 1.0 to 3.0 and plot condenser duty." 
+      }
+    ],
+    "piping": [
+      { "id": "c4", "title": "Auto-Routing", "desc": "Generate automatic pipe routes connecting pump discharge to exchanger.", "media": [{ "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=400", "type": "image" }], "prompt": "Auto-route a 6-inch carbon steel pipe from Pump P-101A discharge nozzle to Exchanger E-100 tube side inlet." },
+      { "id": "c5", "title": "Clash Detection", "desc": "Run a hard clash test against structural steel beams.", "media": [{ "url": "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400", "type": "image" }], "prompt": "Run a clash detection study for the new pipe rack layout against existing structural columns." },
+      { "id": "c6", "title": "Isometric Gen", "desc": "Generate isometric drawings with BOM for fabricated spools.", "media": [{ "url": "https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?auto=format&fit=crop&q=80&w=400", "type": "image" }], "prompt": "Generate isometric extraction for line numbers L-1001 to L-1005 including standard BOM." }
+    ]
+  }
+}

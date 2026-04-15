@@ -163,8 +163,8 @@ type Translations = {
     uploadAttachment: string;
     assets: string;
     attachmentsTitle: string;
-    simulationCases: { id: string; title: string; desc: string; img: string; prompt: string }[];
-    pipingCases: { id: string; title: string; desc: string; img: string; prompt: string }[];
+    simulationCases: any[];
+    pipingCases: any[];
     parameters: string;
     parameterCategories: {
       Process: string;
@@ -521,11 +521,7 @@ const dictionaries: Record<Locale, Translations> = {
       uploadAttachment: "Upload Attachment",
       assets: "ASSETS",
       attachmentsTitle: "Project Attachments",
-      simulationCases: [
-        { id: "c1", title: "Steady State Setup", desc: "Initialize a steady state simulation for a distillation column.", img: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=400", prompt: "Set up a new steady state simulation for a crude distillation unit with 15 stages." },
-        { id: "c2", title: "Dynamic Transition", desc: "Convert steady state to dynamic simulation to study startup behavior.", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=400", prompt: "Convert the current distillation model to dynamic mode and add PI controllers for level." },
-        { id: "c3", title: "Optimization Run", desc: "Run a sensitivity analysis on reflux ratio vs energy consumption.", img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400", prompt: "Set up a sensitivity analysis varying the reflux ratio from 1.0 to 3.0 and plot condenser duty." }
-      ],
+      simulationCases: [],
       pipingCases: [
         { id: "c4", title: "Auto-Routing", desc: "Generate automatic pipe routes connecting pump discharge to exchanger.", img: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=400", prompt: "Auto-route a 6-inch carbon steel pipe from Pump P-101A discharge nozzle to Exchanger E-100 tube side inlet." },
         { id: "c5", title: "Clash Detection", desc: "Run a hard clash test against structural steel beams.", img: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400", prompt: "Run a clash detection study for the new pipe rack layout against existing structural columns." },
@@ -888,16 +884,8 @@ const dictionaries: Record<Locale, Translations> = {
       uploadAttachment: "上传附件",
       assets: "附件",
       attachmentsTitle: "项目附件列表",
-      simulationCases: [
-        { id: "c1", title: "稳态模型建立", desc: "初始化精馏塔的稳态模拟环境。", img: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=400", prompt: "为 15 块塔板的常压精馏装置建立新的稳态模拟。" },
-        { id: "c2", title: "动态特性切换", desc: "将稳态模型转换为动态模拟，以研究开车行为。", img: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=400", prompt: "将当前的精馏模型转换为动态模式，并添加液位 PI 控制器。" },
-        { id: "c3", title: "全局优化运行", desc: "进行回流比与能耗关系的敏感性分析。", img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400", prompt: "设定敏感性分析，将回流比从 1.0 变量至 3.0，并绘制冷凝器负荷曲线。" }
-      ],
-      pipingCases: [
-        { id: "c4", title: "管道自动路由", desc: "自动生成连接泵出口与换热器的管路路由。", img: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=400", prompt: "自动生成一条从泵 P-101A 出口喷嘴到换热器 E-100 管程入口的 6 英寸碳钢管道。" },
-        { id: "c5", title: "硬碰撞碰撞检测", desc: "运行针对结构钢梁的硬碰撞测试。", img: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400", prompt: "针对新的管廊布局运行与现有建筑柱的碰撞检测研究。" },
-        { id: "c6", title: "单线图 ISO 生成", desc: "为预制管段生成含材料表（BOM）的单线图。", img: "https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?auto=format&fit=crop&q=80&w=400", prompt: "为管线编号 L-1001 至 L-1005 生成单线图导出，包含标准 BOM。" }
-      ],
+      simulationCases: [],
+      pipingCases: [],
       parameters: "关键参数",
       parameterCategories: {
         Process: "过程参数",

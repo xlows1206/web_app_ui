@@ -29,7 +29,6 @@ export default function SessionPage() {
   const [projectSessions, setProjectSessions] = useState<any[]>([]);
   const [projectName, setProjectName] = useState("Project Workspace");
   const [type, setType] = useState<string>("simulation");
-  const [cases, setCases] = useState<any[]>(t.projects.simulationCases);
 
   const loadContext = () => {
     const urlProjectId = searchParams.get("project_id");
@@ -47,7 +46,6 @@ export default function SessionPage() {
       if (p) {
          setProjectName(p.name);
          setType(p.type || "simulation");
-         setCases(p.type === "piping" ? t.projects.pipingCases : t.projects.simulationCases);
          setProjectSessions(p.sessions || []);
       }
     }
@@ -55,7 +53,7 @@ export default function SessionPage() {
 
   useEffect(() => {
     loadContext();
-  }, [searchParams, t]);
+  }, [searchParams]);
 
   useEffect(() => {
     const handleUpdate = () => loadContext();
@@ -74,7 +72,6 @@ export default function SessionPage() {
         projectId={projectId}
         projectName={projectName}
         type={type}
-        cases={cases}
         projectSessions={projectSessions}
         setProjectSessions={setProjectSessions}
         loadContext={loadContext}

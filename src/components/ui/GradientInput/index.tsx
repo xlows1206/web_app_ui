@@ -62,15 +62,22 @@ const GradientInput: React.FC<GradientInputProps> = ({
     { id: 'explain', name: '/explain', description: 'Explain step by step' }
   ];
 
-  // Sync internal text when prop value changes (e.g. onSend resets it)
+  // Sync DOM text when value prop changes
   useEffect(() => {
     if (value !== internalText) {
       setInternalText(value);
-      if (editorRef.current && value === "") {
-        editorRef.current.innerText = "";
-      }
+    }
+    if (!editorRef.current) return;
+    // Remove existing text nodes, preserve pill <span> nodes
+    Array.from(editorRef.current.childNodes).forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE) node.remove();
+    });
+    // If value is non-empty, append it as a text node (after pills)
+    if (value) {
+      editorRef.current.appendChild(document.createTextNode(value));
     }
   }, [value]);
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -93,13 +100,11 @@ const GradientInput: React.FC<GradientInputProps> = ({
 
   const handleInput = () => {
     if (editorRef.current) {
-      // Get all text nodes but ignore text inside our pills
-      // A simple way is to clone the node and remove the pills before getting innerText
+      // Clone and strip pill spans to get pure user text
       const tempDiv = editorRef.current.cloneNode(true) as HTMLDivElement;
       const pills = tempDiv.querySelectorAll('.pill-inline-wrapper');
       pills.forEach(p => p.remove());
       const text = tempDiv.innerText;
-      
       setInternalText(text);
       onChange(text);
     }
@@ -127,7 +132,7 @@ const GradientInput: React.FC<GradientInputProps> = ({
         {/* The Single Scrollable Flow & Editable Container */}
         <div 
           ref={editorRef}
-          key={`input-${attachments.length}`} // Keyed by attachments length to force hard reset on change, preventing DOM desync errors
+          key={`gradient-input-${attachments.length}`}
           className="gradient-input-container w-full custom-scrollbar"
           contentEditable={!isGenerating}
           onInput={handleInput}
@@ -139,9 +144,9 @@ const GradientInput: React.FC<GradientInputProps> = ({
         >{attachments.map((file) => (
               <span key={file.id} className="pill-inline-wrapper" contentEditable={false}>
                 <FileCard 
-                  file={file as any} 
-                  showRemove 
-                  onRemove={onRemoveAttachment} 
+                  file={{ id: file.id, name: file.name, type: file.type || 'pdf' }}
+                  showRemove={true}
+                  onRemove={(id) => onRemoveAttachment?.(id)}
                 />
               </span>
             ))}</div>

@@ -24,18 +24,42 @@ export default function ProjectSandboxView({
   projectId,
   projectName,
   type,
-  cases,
   projectSessions,
   setProjectSessions,
   loadContext
-}: ProjectSandboxViewProps) {
+}: Omit<ProjectSandboxViewProps, 'cases'>) {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+
+  const [dynamicCases, setDynamicCases] = useState<any[]>([]);
+  const [isLoadingCases, setIsLoadingCases] = useState(true);
+
+  useEffect(() => {
+    const fetchCases = async () => {
+      try {
+        setIsLoadingCases(true);
+        const resp = await fetch('/data/cases.json');
+        const data = await resp.json();
+        
+        // Filter by locale and type
+        const localizedData = data[locale] || data['zh'];
+        const filteredCases = type === 'simulation' ? localizedData.simulation : localizedData.piping;
+        
+        setDynamicCases(filteredCases || []);
+      } catch (err) {
+        console.error("Failed to load cases:", err);
+      } finally {
+        setIsLoadingCases(false);
+      }
+    };
+    fetchCases();
+  }, [locale, type]);
 
   const {
     projectFiles,
     setProjectFiles,
     attachments,
+    setAttachments,
     uploadFiles,
     removeFile,
     removeAttachment,
@@ -79,10 +103,44 @@ export default function ProjectSandboxView({
   }, [isDraggingSidebar]);
 
   const handleApplyCase = (c: any) => {
+    if (!c) return;
+    
+    // 1. Close modal and clear existing inputs to ensure a clean state
     setShowCasePopup(null);
-    setInput(c.prompt);
-    // Use setAttachments directly for preset case data
-    setProjectFiles(prev => [...prev, { id: `case_${Date.now()}`, name: `${c.title.replace(/\s+/g, "_")}_Data.json`, size: "12 KB", type: "application/json" }]);
+    setInput(""); // Reset first
+    setAttachments([]); // Clear existing attachments
+    
+    // Use a tiny delay to allow React to clear the DOM if needed before repopulating
+    setTimeout(() => {
+      // 2. Populate the prompt
+      if (c.prompt) {
+        setInput(c.prompt);
+      }
+      
+      // 3. Add dynamic attachments from the JSON data
+      if (c.attachments && Array.isArray(c.attachments)) {
+        const newFiles = c.attachments.map((file: any) => ({
+          id: `case_file_${Math.random().toString(36).substr(2, 9)}`,
+          name: file.name,
+          size: file.size || "Unknown size",
+          type: file.type || (file.name.endsWith('.pdf') ? 'pdf' : 'file')
+        }));
+        // We set directly to ensure these are the only attachments associated with the template
+        setAttachments(newFiles);
+      } else {
+        const safeTitle = (c.title || "Case").replace(/\s+/g, "_");
+        const newFile = { 
+          id: `case_${Date.now()}`, 
+          name: `${safeTitle}_Context.json`, 
+          size: "8.4 KB", 
+          type: "application/json" 
+        };
+        setAttachments([newFile]);
+      }
+    }, 50);
+    
+    // Track in pipeline
+    console.log(`Applied template: ${c.title} with ${c.attachments?.length || 1} attachments`);
   };
 
   const handleSend = async (forcedText?: string | any) => {
@@ -138,14 +196,26 @@ export default function ProjectSandboxView({
                 <div className="flex flex-col items-center justify-center mb-12">
                   <h2 className="text-4xl font-medium text-on-surface/90 tracking-normal">{t.projects.sandboxTitle}</h2>
                 </div>
-                <div className="grid grid-cols-3 gap-6 max-w-5xl mx-auto w-full mb-12">
-                  {cases.map((c) => (
-                    <button key={c.id} onClick={() => setShowCasePopup(c)} className="bg-white/60 px-6 py-5 rounded-[24px] border border-white hover:border-primary/30 transition-all text-left shadow-sm hover:shadow-md h-full">
-                      <h4 className="font-bold text-lg mb-2">{c.title}</h4>
-                      <p className="text-sm text-on-surface/60 line-clamp-2">{c.desc}</p>
-                    </button>
-                  ))}
-                </div>
+                
+                {isLoadingCases ? (
+                  <div className="flex flex-1 items-center justify-center -mt-20">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-10 h-10 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
+                      <p className="text-sm text-on-surface/40 font-medium animate-pulse">{t.common.loading}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-6 max-w-5xl mx-auto w-full mb-12">
+                    {dynamicCases.map((c) => (
+                      <button key={c.id} onClick={() => setShowCasePopup(c)} className="bg-white/60 px-6 py-5 rounded-[24px] border border-white hover:border-primary/30 transition-all text-left shadow-sm hover:shadow-md h-full group relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <h4 className="font-bold text-lg mb-2 relative z-10">{c.title}</h4>
+                        <p className="text-sm text-on-surface/60 line-clamp-2 relative z-10">{c.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                
                 <div className="mt-auto">
                   <GradientInput value={input} onChange={setInput} onSend={handleSend} placeholder={t.projects.sandboxSubtitle} attachments={attachments} onRemoveAttachment={removeAttachment} isGenerating={isGenerating} projectFiles={projectFiles} onAddAttachment={toggleContext} />
                 </div>

@@ -110,11 +110,11 @@
   overflow-wrap: break-word;
 }
 
-/* Helper for the individual pill containers to stay inline */
+/* Helper for the individual pill containers to stay inline with text */
 .pill-inline-wrapper {
   display: inline-flex;
-  vertical-align: middle;
-  margin-right: 6px;
+  vertical-align: middle; /* Align with text baseline for proper inline flow */
+  margin-right: 4px;
   margin-bottom: 2px;
   user-select: none;
 }
